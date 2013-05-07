@@ -1,0 +1,24 @@
+@(result: dice.DiceResult)
+<html>
+<head>
+    <title>Dice Roll Result</title>
+</head>
+<body>
+<div>
+    <div>
+        <h1>Roll Results</h1>
+        <p>
+            <h3>Rolled: @result.rolled</h3>
+            <h3>Kept: @result.kept</h3>
+            <h3>Sides: @result.sides</h3>
+        </p>
+        <p>
+            <h3>Rolls: @{result.rolls.mkString(", ")}</h3>
+        </p>
+        <p>
+            <h2>Total: @result.total</h2>
+        </p>
+    </div>
+</body>
+</html>
+
