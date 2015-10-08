@@ -1,24 +1,26 @@
 package dice
 
-import scala.util.Random
+import scalaz._
+import scalaz.Scalaz._
 
 object Dice {
+  import RNG._
 
-  def apply(rolled: Int = 1, kept: Int = 0, sides: Int = 6): DiceResult = {
-    val results = rolls(sides, rolled).sorted.reverse
-    val actualKept: Int = if (kept > 0) kept else rolled
-    val total: Int = results.take(actualKept) reduce { (s: Int, i: Int) => s + i }
+  def apply(rolled: Int = 1, kept: Int = 0, sides: Int = 6): Rand[DiceResult] = rolls(sides, rolled) map { results =>
+    val actualKept = if (kept > 0) kept else rolled
+    val total = results.sorted.reverse.take(actualKept).sum
     DiceResult(total, sides, rolled, actualKept, results)
   }
 
-  def rolls(sides: Int, rolled: Int): List[Int] = rolled match {
-    case 0 => Nil
-    case i if (i > 0) => roll(sides) :: rolls(sides, rolled - 1)
-    case _ => throw new IllegalArgumentException("Negative number of rolls not allowed!")
+  def rolls(sides: Int, rolled: Int): Rand[List[Int]] = {
+    if (rolled < 0) throw new IllegalArgumentException("Negative number of rolls not allowed!")
+    else {
+      val rolls = List.fill(rolled)(roll(sides))
+      rolls.sequence[Rand, Int]
+    }
   }
 
-  def roll(sides: Int): Int = Random.nextInt(sides) + 1
-
+  def roll(sides: Int): Rand[Int] = nonNegativeLessThan(sides) map { _ + 1 }
 }
 
 case class DiceResult(total: Int, sides: Int, rolled: Int, kept: Int, rolls: List[Int])
