@@ -1,5 +1,7 @@
 package dice
 
+import java.util.concurrent.atomic.AtomicReference
+
 import org.scalatra.ScalatraServlet
 import common.RichScalatraServlet
 
@@ -28,12 +30,11 @@ class Dispatcher extends RichScalatraServlet {
     }
   }
 
-  // We don't care about consistency issues for this state so a var should be fine.
-  private var rng = RNG(System.nanoTime())
+  private var rng: AtomicReference[RNG] = new AtomicReference[RNG](RNG(System.nanoTime()))
 
   private def rollDice(rolled: Int, kept: Int, sides: Int): DiceResult = {
     val (nextRng, result) = Dice(rolled, kept, sides)(rng)
-    rng = nextRng
+    rng.set(nextRng)
     result
   }
 }
